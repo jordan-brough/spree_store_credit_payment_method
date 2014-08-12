@@ -359,8 +359,9 @@ describe "StoreCredit" do
                                    authorization_code: event_auth_code,
                                    amount: captured_amount,
                                    store_credit: store_credit) }
+    let(:originator) { nil }
 
-    subject { store_credit.credit(credit_amount, auth_code, currency) }
+    subject { store_credit.credit(credit_amount, auth_code, currency, originator) }
 
     context "currency does not match" do
       let(:currency)        { "AUD" }
@@ -453,6 +454,17 @@ describe "StoreCredit" do
 
           it "sets a memo" do
             @new_store_credit.memo.should eq "This is a credit from store credit ID #{store_credit.id}"
+          end
+        end
+
+        context "originator is present" do
+          with_model 'OriginatorThing'
+
+          let(:originator) { OriginatorThing.create! } # won't actually be a user. just giving it a valid model here
+
+          it "records the originator" do
+            expect { subject }.to change { Spree::StoreCreditEvent.count }.by(1)
+            expect(Spree::StoreCreditEvent.last.originator).to eq originator
           end
         end
       end

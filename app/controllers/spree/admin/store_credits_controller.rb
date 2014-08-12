@@ -16,6 +16,7 @@ module Spree
       def create
         @store_credit = @user.store_credits.build(permitted_store_credit_params)
         @store_credit.created_by = try_spree_current_user
+        @store_credit.event_originator = try_spree_current_user
 
         if @store_credit.save
           flash[:success] = flash_message_for(@store_credit, :successfully_created)

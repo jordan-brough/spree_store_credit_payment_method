@@ -18,7 +18,7 @@ module Spree
         ActiveMerchant::Billing::Response.new(false, Spree.t('store_credit_payment_method.unable_to_find'), {}, {})
       else
         action = -> (store_credit) {
-          store_credit.authorize(amount_in_cents / 100.0, gateway_options[:currency])
+          store_credit.authorize(amount_in_cents / 100.0, gateway_options[:currency], gateway_options[:originator])
         }
         handle_action_call(store_credit, action, :authorize)
       end
@@ -26,7 +26,7 @@ module Spree
 
     def capture(amount_in_cents, auth_code, gateway_options = {})
       action = -> (store_credit) {
-        store_credit.capture(amount_in_cents / 100.0, auth_code, gateway_options[:currency])
+        store_credit.capture(amount_in_cents / 100.0, auth_code, gateway_options[:currency], gateway_options[:originator])
       }
 
       handle_action(action, :capture, auth_code)
@@ -46,14 +46,17 @@ module Spree
       end
     end
 
-    def void(auth_code, *ignored_options)
-      action = -> (store_credit) { store_credit.void(auth_code) }
+    def void(auth_code, gateway_options)
+      action = -> (store_credit) { store_credit.void(auth_code, gateway_options[:originator]) }
       handle_action(action, :void, auth_code)
     end
 
     def credit(amount_in_cents, auth_code, gateway_options)
+      currency = gateway_options[:currency] || store_credit.currency
+      originator = gateway_options[:originator]
+
       action = -> (store_credit) {
-        store_credit.credit(amount_in_cents / 100.0, auth_code, gateway_options[:currency] || store_credit.currency)
+        store_credit.credit(amount_in_cents / 100.0, auth_code, currency, originator)
       }
 
       handle_action(action, :credit, auth_code)

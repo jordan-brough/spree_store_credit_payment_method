@@ -151,5 +151,20 @@ describe Spree::PaymentMethod::StoreCredit do
       expect(resp.success?).to be true
       resp.message.should include Spree.t('store_credit_payment_method.successful_action', action: Spree::StoreCredit::CREDIT_ACTION)
     end
+
+    context 'with an originator' do
+      let(:originator) { double('originator') }
+      let(:gateway_options) { super().merge(originator: originator) }
+
+      it 'passes the originator' do
+        auth_event = create(:store_credit_auth_event)
+        Spree::StoreCredit.any_instance
+          .should_receive(:credit)
+          .with(anything, anything, anything, originator)
+          .and_return(true)
+
+        subject.credit(100.0, auth_event.authorization_code, gateway_options)
+      end
+    end
   end
 end
