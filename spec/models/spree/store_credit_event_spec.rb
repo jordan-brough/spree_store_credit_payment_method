@@ -1,6 +1,39 @@
 require 'spec_helper'
 
-describe "StoreCreditEvent" do
+describe Spree::StoreCreditEvent do
+
+  describe ".exposed_events" do
+
+    [
+      Spree::StoreCredit::ELIGIBLE_ACTION,
+      Spree::StoreCredit::AUTHORIZE_ACTION,
+    ].each do |action|
+      let(:action) { action }
+      it "excludes #{action} actions" do
+        event = create(:store_credit_event, action: action)
+        expect(described_class.exposed_events).not_to include event
+      end
+    end
+
+    [
+      Spree::StoreCredit::VOID_ACTION,
+      Spree::StoreCredit::CREDIT_ACTION,
+      Spree::StoreCredit::CAPTURE_ACTION,
+      Spree::StoreCredit::ALLOCATION_ACTION,
+    ].each do |action|
+      it "includes #{action} actions" do
+        event = create(:store_credit_event, action: action)
+        expect(described_class.exposed_events).to include event
+      end
+    end
+
+    it "excludes invalidated store credit events" do
+      invalidated_store_credit = create(:store_credit, invalidated_at: Time.now)
+      event = create(:store_credit_event, action: Spree::StoreCredit::VOID_ACTION, store_credit: invalidated_store_credit)
+      expect(described_class.exposed_events).not_to include event
+    end
+  end
+
   describe "#display_amount" do
     let(:event_amount) { 120.0 }
 

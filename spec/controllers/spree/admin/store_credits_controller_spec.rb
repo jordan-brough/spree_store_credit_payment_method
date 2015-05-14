@@ -6,16 +6,6 @@ shared_examples "category loader" do
   end
 end
 
-shared_examples "prevents changing used store credits" do
-  before do
-    store_credit.update_attributes(amount_used: 10.0)
-  end
-
-  it "raises an error" do
-    expect { subject }.to raise_error(Spree::Admin::StoreCreditError)
-  end
-end
-
 describe Spree::Admin::StoreCreditsController do
   stub_authorization!
   let(:user) { create(:user) }
@@ -230,54 +220,44 @@ describe Spree::Admin::StoreCreditsController do
     end
   end
 
-  describe "DELETE destroy" do
+  describe "PUT invalidate" do
     let!(:store_credit) { create(:store_credit, user: user, category: b_credit_category) }
 
-    context "the store credit has been used" do
-      subject { spree_delete :destroy, user_id: user.id, id: store_credit.id }
-
-      it_behaves_like "prevents changing used store credits"
+    it "attempts to invalidate the store credit" do
+      expect { spree_put :invalidate, user_id: user.id, id: store_credit.id }.to change { store_credit.reload.invalidated_at }.from(nil)
     end
 
-    context "the destroy is unsuccessful" do
+    context "the invalidation is unsuccessful" do
       before do
-        allow_any_instance_of(Spree::StoreCredit).to receive_messages(destroy: false)
+        store_credit.authorize(5.0, "USD")
         subject
       end
 
-      subject { spree_delete :destroy, user_id: user.id, id: store_credit.id }
+      subject { spree_put :invalidate, user_id: user.id, id: store_credit.id }
 
       it "returns a 422" do
         expect(response.status).to eq 422
       end
 
       it "returns an error message" do
-        expect(response.body).to match Spree.t("admin.store_credits.unable_to_delete")
+        expect(response.body).to match /uncaptured authorization/
       end
     end
 
     context "html request" do
-      subject { spree_delete :destroy, user_id: user.id, id: store_credit.id }
+      subject { spree_put :invalidate, user_id: user.id, id: store_credit.id }
 
       it "redirects to index" do
         expect(subject).to redirect_to spree.admin_user_store_credits_path(user)
       end
-
-      it "deletes the store credit" do
-        expect { subject }.to change(Spree::StoreCredit, :count).by(-1)
-      end
     end
 
     context "js request" do
-      subject { spree_delete :destroy, user_id: user.id, id: store_credit.id, format: :js }
+      subject { spree_put :invalidate, user_id: user.id, id: store_credit.id, format: :js }
 
       it "returns a 200 status code" do
         subject
         expect(response.code).to eq "200"
-      end
-
-      it "deletes the store credit" do
-        expect { subject }.to change(Spree::StoreCredit, :count).by(-1)
       end
     end
   end

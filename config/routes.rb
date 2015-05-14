@@ -1,7 +1,11 @@
 Spree::Core::Engine.routes.draw do
   namespace :admin do
     resources :users, only: [] do
-      resources :store_credits
+      resources :store_credits, except: [:destroy] do
+        member do
+          put :invalidate
+        end
+      end
 
       resources :gift_cards, only: [] do
         collection do
