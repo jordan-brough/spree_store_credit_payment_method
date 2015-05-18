@@ -83,8 +83,9 @@ class Spree::StoreCredit < ActiveRecord::Base
 
   def capture(amount, authorization_code, order_currency, options={})
     return false unless authorize(amount, order_currency, action_authorization_code: authorization_code)
+    auth_event = store_credit_events.find_by!(action: AUTHORIZE_ACTION, authorization_code: authorization_code)
 
-    if amount <= amount_authorized
+    if amount <= auth_event.amount
       if currency != order_currency
         errors.add(:base, Spree.t('store_credit_payment_method.currency_mismatch'))
         false
@@ -96,7 +97,7 @@ class Spree::StoreCredit < ActiveRecord::Base
           action_authorization_code: authorization_code,
 
           amount_used: self.amount_used + amount,
-          amount_authorized: self.amount_authorized - amount,
+          amount_authorized: self.amount_authorized - auth_event.amount,
         })
         authorization_code
       end
