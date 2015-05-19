@@ -13,6 +13,7 @@
     <thead>
       <th><%= Spree.t("admin.store_credits.credited_html_header").html_safe %></th>
       <th><%= Spree.t("admin.store_credits.used_html_header").html_safe %></th>
+      <th><%= Spree.t("admin.store_credits.authed_html_header").html_safe %></th>
       <th><%= Spree.t("admin.store_credits.type_html_header").html_safe %></th>
       <th><%= Spree.t("admin.store_credits.created_by") %></th>
       <th><%= Spree.t("admin.store_credits.issued_on") %></th>
@@ -26,6 +27,9 @@
           </td>
           <td class='align-center'>
             <span><%= store_credit.display_amount_used.to_html %></span>
+          </td>
+          <td class='align-center'>
+            <span><%= store_credit.display_amount_authorized.to_html %></span>
           </td>
           <td class='align-center'>
             <span><%= store_credit.category_name %></span>

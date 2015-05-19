@@ -53,6 +53,7 @@ en:
         back_to_store_credit_list: "Back to store credit list"
         credited_html_header: "Amount<br/>Credited"
         used_html_header: "Amount<br/>Used"
+        authed_html_header: "Amount<br/>Authorized"
         type_html_header: "Credit<br/>Type"
         created_by: "Created By"
         issued_on: "Issued On"

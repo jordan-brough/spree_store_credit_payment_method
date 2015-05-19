@@ -266,15 +266,14 @@ describe "StoreCredit" do
 
   describe "#capture" do
     let(:authorized_amount) { 10.00 }
-    let(:auth_code)         { "23-SC-20140602164814476128" }
 
     before do
-      store_credit.update_attributes(amount_authorized: authorized_amount, amount_used: 0.0)
-      allow(store_credit).to receive_messages(authorize: true)
+      @original_authed_amount = store_credit.amount_authorized
+      @auth_code = store_credit.authorize(authorized_amount, store_credit.currency)
     end
 
     context "insufficient funds" do
-      subject { store_credit.capture(authorized_amount * 2, auth_code,store_credit.currency) }
+      subject { store_credit.capture(authorized_amount * 2, @auth_code, store_credit.currency) }
 
       it "returns false" do
         expect(subject).to be false
@@ -291,7 +290,7 @@ describe "StoreCredit" do
     end
 
     context "currency mismatch" do
-      subject { store_credit.capture(authorized_amount, auth_code, "EUR") }
+      subject { store_credit.capture(authorized_amount, @auth_code, "EUR") }
 
       it "returns false" do
         expect(subject).to be false
@@ -311,15 +310,15 @@ describe "StoreCredit" do
       let(:remaining_authorized_amount) { 1 }
       let(:originator) { nil }
 
-      subject { store_credit.capture(authorized_amount - remaining_authorized_amount, auth_code, store_credit.currency, action_originator: originator) }
+      subject { store_credit.capture(authorized_amount - remaining_authorized_amount, @auth_code, store_credit.currency, action_originator: originator) }
 
       it "returns true" do
         expect(subject).to be_truthy
       end
 
-      it "updates the authorized amount to the difference between the captured amount and the authorized amount" do
+      it "updates the authorized amount to the difference between the store credits total authed amount and the authorized amount for this event" do
         subject
-        expect(store_credit.reload.amount_authorized).to eq remaining_authorized_amount
+        expect(store_credit.reload.amount_authorized).to eq(@original_authed_amount)
       end
 
       it "updates the used amount to the current used amount plus the captured amount" do
