@@ -46,6 +46,7 @@ class Spree::StoreCredit < ActiveRecord::Base
   end
 
   def amount_remaining
+    return 0.0.to_d if invalidated?
     amount - amount_used - amount_authorized
   end
 
@@ -168,6 +169,27 @@ class Spree::StoreCredit < ActiveRecord::Base
 
   def generate_authorization_code
     "#{self.id}-SC-#{Time.now.utc.strftime("%Y%m%d%H%M%S%6N")}"
+  end
+
+  def editable?
+    !amount_remaining.zero?
+  end
+
+  def invalidateable?
+    !invalidated? && amount_authorized.zero?
+  end
+
+  def invalidated?
+    !!invalidated_at
+  end
+
+  def invalidate
+    if invalidateable?
+      touch(:invalidated_at)
+    else
+      errors.add(:invalidated_at, Spree.t("store_credit.errors.cannot_invalidate_uncaptured_authorization"))
+      return false
+    end
   end
 
   class << self

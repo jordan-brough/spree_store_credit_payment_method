@@ -30,8 +30,10 @@ en:
       authorized: "Authorized"
       captured: "Used"
       allocated: "Added"
+      invalidate: "Invalidate"
       errors:
         unable_to_fund: "Unable to pay for order using store credits"
+        cannot_invalidate_uncaptured_authorization: "Cannot invalidate a store credit with an uncaptured authorization"
     admin:
       user:
         store_credit: "Store Credit"
@@ -56,6 +58,7 @@ en:
         authed_html_header: "Amount<br/>Authorized"
         type_html_header: "Credit<br/>Type"
         created_by: "Created By"
+        invalidated: "Invalidated"
         issued_on: "Issued On"
         select_reason: "Select a reason for this store credit"
         unable_to_create: "Unable to create store credit"

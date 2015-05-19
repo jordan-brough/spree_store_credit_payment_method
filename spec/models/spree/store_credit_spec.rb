@@ -128,6 +128,11 @@ describe "StoreCredit" do
   end
 
   describe "#amount_remaining" do
+    context "invalidated" do
+      before { allow(store_credit).to receive(:invalidated?) { true } }
+      it { expect(store_credit.amount_remaining).to eq 0.0 }
+    end
+
     context "the amount_used is not defined" do
       context "the authorized amount is not defined" do
         it "returns the credited amount" do
@@ -758,6 +763,36 @@ describe "StoreCredit" do
             expect { store_credit.save! }.to change { Spree::StoreCreditEvent.where(action: Spree::StoreCredit::VOID_ACTION).count }.by(1)
           end
         end
+      end
+    end
+  end
+
+  describe "#invalidate" do
+    before { allow(store_credit).to receive(:touch) }
+    it "sets the invalidated_at field to the current time" do
+      store_credit.invalidate
+      expect(store_credit).to have_received(:touch).with(:invalidated_at)
+    end
+
+    context "there is an uncaptured authorization" do
+      before { store_credit.authorize(5.0, "USD") }
+      it "prevents invalidation" do
+        store_credit.invalidate
+        expect(store_credit).not_to have_received(:touch)
+        expect(store_credit.errors[:invalidated_at].join).to match /uncaptured authorization/
+      end
+    end
+
+    context "there is a captured authorization" do
+      before do
+        auth_code = store_credit.authorize(5.0, "USD")
+        store_credit.capture(5.0, auth_code, "USD")
+      end
+
+      it "can invalidate the rest of the store credit" do
+        store_credit.invalidate
+        expect(store_credit).to have_received(:touch).with(:invalidated_at)
+        expect(store_credit.errors).to be_blank
       end
     end
   end

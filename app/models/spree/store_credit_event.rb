@@ -5,7 +5,9 @@ module Spree
     belongs_to :store_credit
     belongs_to :originator, polymorphic: true
 
-    scope :exposed_events, -> { where.not(action: [Spree::StoreCredit::ELIGIBLE_ACTION, Spree::StoreCredit::AUTHORIZE_ACTION]) }
+    scope :exposed_events, -> { exposable_actions.not_invalidated }
+    scope :exposable_actions, -> { where.not(action: [Spree::StoreCredit::ELIGIBLE_ACTION, Spree::StoreCredit::AUTHORIZE_ACTION]) }
+    scope :not_invalidated, -> { joins(:store_credit).where(spree_store_credits: { invalidated_at: nil }) }
     scope :reverse_chronological, -> { order(created_at: :desc) }
 
     delegate :currency, to: :store_credit
