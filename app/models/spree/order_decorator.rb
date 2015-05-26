@@ -101,7 +101,7 @@ module SpreeStoreCredits::OrderDecorator
       super
 
       # Free up authorized store credits
-      payments.store_credits.pending.each { |payment| payment.void! }
+      payments.store_credits.pending.each { |payment| payment.void_transaction! }
 
       # payment_state has to be updated because after_cancel on
       # super does an update_column on the payment_state to set
