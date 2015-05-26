@@ -55,6 +55,10 @@ FactoryGirl.define do
     factory :store_credit_auth_event do
       action             { Spree::StoreCredit::AUTHORIZE_ACTION }
     end
+
+    factory :store_credit_capture_event do
+      action             { Spree::StoreCredit::CAPTURE_ACTION }
+    end
   end
 
   factory :store_credits_order_without_user, class: Spree::Order do
