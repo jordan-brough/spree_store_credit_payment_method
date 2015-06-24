@@ -103,7 +103,7 @@ describe "Order" do
 
     context "there is enough store credit to pay for the entire order" do
       let(:store_credit) { create(:store_credit, amount: order_total) }
-      let(:order)        { create(:order, user: store_credit.user, total: order_total) }
+      let(:order) { create(:order_with_totals, user: store_credit.user, line_items_price: order_total).tap(&:update!) }
 
       context "there are no other payments" do
         before do
@@ -139,7 +139,7 @@ describe "Order" do
       let(:order_total) { 500 }
       let(:store_credit_total) { order_total - 100 }
       let(:store_credit)       { create(:store_credit, amount: store_credit_total) }
-      let(:order) { create(:order_with_totals, user: store_credit.user, line_items_price: order_total) }
+      let(:order) { create(:order_with_totals, user: store_credit.user, line_items_price: order_total).tap(&:update!) }
 
       context "there are no other payments" do
         it "adds an error to the model" do
@@ -194,7 +194,7 @@ describe "Order" do
         let(:amount_difference)       { 100 }
         let!(:primary_store_credit)   { create(:store_credit, amount: (order_total - amount_difference)) }
         let!(:secondary_store_credit) { create(:store_credit, amount: order_total, user: primary_store_credit.user, credit_type: create(:secondary_credit_type)) }
-        let(:order)                   { create(:order, user: primary_store_credit.user, total: order_total) }
+        let(:order) { create(:order_with_totals, user: primary_store_credit.user, line_items_price: order_total).tap(&:update!) }
 
         before do
           subject
