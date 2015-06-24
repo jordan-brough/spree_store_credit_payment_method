@@ -162,9 +162,7 @@ describe "Order" do
           expect(order.payments.first.amount).to eq 100
         end
 
-        # this can happen when auto capture is off and a user tries to complete an
-        # order and the store credit gets authorized (but not captured) and the
-        # credit card fails.
+        # see associated comment in order_decorator#add_store_credit_payments
         context "the store credit is already in the pending state" do
           before do
             order.payments.store_credits.last.authorize!

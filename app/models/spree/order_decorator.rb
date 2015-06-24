@@ -33,6 +33,9 @@ module SpreeStoreCredits::OrderDecorator
     def add_store_credit_payments
       payments.store_credits.where(state: 'checkout').map(&:invalidate!)
 
+      # this can happen when auto capture is off and a user tries to complete an
+      # order and the store credit gets authorized (but not captured) and the
+      # credit card fails.
       authorized_total = payments.store_credits.pending.sum(:amount)
 
       remaining_total = outstanding_balance - authorized_total
