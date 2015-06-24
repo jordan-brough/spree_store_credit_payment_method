@@ -33,7 +33,9 @@ module SpreeStoreCredits::OrderDecorator
     def add_store_credit_payments
       payments.store_credits.where(state: 'checkout').map(&:invalidate!)
 
-      remaining_total = outstanding_balance
+      authorized_total = payments.store_credits.pending.sum(:amount)
+
+      remaining_total = outstanding_balance - authorized_total
 
       if user && user.store_credits.any?
         payment_method = Spree::PaymentMethod.find_by_type('Spree::PaymentMethod::StoreCredit')
