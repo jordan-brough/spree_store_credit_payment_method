@@ -78,6 +78,7 @@ describe "Order" do
         end
 
         it "charges the outstanding balance to the credit card" do
+          expect(order.errors.messages).to be_empty
           expect(order.payments.count).to eq 1
           expect(order.payments.first.source).to be_a(Spree::CreditCard)
           expect(order.payments.first.amount).to eq order_total
@@ -111,6 +112,7 @@ describe "Order" do
         end
 
         it "creates a store credit payment for the full amount" do
+          expect(order.errors.messages).to be_empty
           expect(order.payments.count).to eq 1
           expect(order.payments.first).to be_store_credit
           expect(order.payments.first.amount).to eq order_total
@@ -148,7 +150,7 @@ describe "Order" do
       end
 
       context "there is a credit card payment" do
-        let!(:cc_payment) { create(:payment, order: order) }
+        let!(:cc_payment) { create(:payment, order: order, amount: order_total) }
 
         before do
           # callbacks recalculate total based on line items
@@ -159,6 +161,7 @@ describe "Order" do
         end
 
         it "charges the outstanding balance to the credit card" do
+          expect(order.errors.messages).to be_empty
           expect(order.payments.count).to eq 2
           expect(order.payments.first.source).to be_a(Spree::CreditCard)
           expect(order.payments.first.amount).to eq expected_cc_total

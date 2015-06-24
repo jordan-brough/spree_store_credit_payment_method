@@ -131,6 +131,8 @@ module SpreeStoreCredits::OrderDecorator
       else
         other_payment.update_attributes!(amount: amount)
       end
+
+      payments.reload
     end
 
     def create_store_credit_payment(payment_method, credit, amount)
